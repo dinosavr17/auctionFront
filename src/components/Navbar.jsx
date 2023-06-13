@@ -5,16 +5,16 @@ import {
     Bars,
     NavMenu,
 } from './NavbarElements';
-import logoImage from '../images/logotype.svg'
+import logoImage from '../images/logotype.png'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBagShopping } from '@fortawesome/free-solid-svg-icons'
+import { faCoins} from '@fortawesome/free-solid-svg-icons'
 import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons'
 import {faUserShield} from "@fortawesome/free-solid-svg-icons";
 import * as AiIcons from 'react-icons/ai';
 import { IconContext } from 'react-icons';
 import Badge from '@mui/material/Badge';
 import AuthContext from "../context/AuthProvider";
-import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import './navbar.css';
 import { useSelector } from "react-redux";
 import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
@@ -29,41 +29,30 @@ const Navbar = () => {
     const showSidebar = () => setSidebar(!sidebar);
     useEffect(async ()=>{
         const response=await axios.get(
-            '/info',
+            'http://130.193.40.81:8000/api/userInfo/',
             {
                 headers: {
                     'Authorization': `Bearer ${JSON.parse(localStorage.getItem("userData")).accessToken}`,
                 },
             }
         );
-        // console.log(response.data.userBalance);
         setInfo(response.data);
-        // console.log('РОЛЬ111',response.data.roleId)
-        setRole(response.data.roleId);
-        // console.log(response.data);
-        // console.log('РОЛЬ',role);
+        console.log(info, 'Новое userInfo');
+
     },[role])
     const quantity = useSelector(state=>state.cart.quantity)
     // console.log(quantity)
     // console.log(info);
-    useEffect(()=>{
-        if (role == 2)
-        {   document.getElementById('admPanel').style.display = 'flex';
-            document.getElementById('admPanel2').style.display = 'flex';
-        }
-
-        else
-        {   document.getElementById('admPanel').style.display = 'none';
-            document.getElementById('admPanel2').style.display = 'none';
-        }
-        },[role])
 
     return (
 
         <>
             <Nav>
                 <NavLink to='/'>
-                    <img className="logoImage" src={logoImage} alt='logo'/>
+                    <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyItems: 'center'}}>
+                    <img className="logoImage" style={{width:'70px', height: '70px'}} src={logoImage} alt='logo'/>
+                    Главная
+                    </div>
                 </NavLink>
                 <IconContext.Provider value={{ color: '#00d29d' }}>
                     <div className='navbar'>
@@ -82,35 +71,35 @@ const Navbar = () => {
                                 </NavLink>
                             </li>
                                     <li>
-                                        <NavLink id='admPanel2' to='/adm-home' activeStyle>
-                                            <div><FontAwesomeIcon icon={faUserShield}/></div>
-                                            <div>Управление</div>
-                                        </NavLink>
+                                        {/*<NavLink id='admPanel2' to='/adm-home' activeStyle>*/}
+                                        {/*    <div><FontAwesomeIcon icon={faUserShield}/></div>*/}
+                                        {/*    <div>Управление</div>*/}
+                                        {/*</NavLink>*/}
                                         <NavLink to='#' activeStyle>
                                             <div><button className="userBalance">
-                                                {info.userBalance}&#129689;</button></div>
+                                                balance &#129689;</button></div>
                                             <div>
-                                                {info.email}
+                                                {/*{info.email}*/} email
                                             </div>
                                         </NavLink>
                                         <NavLink to='/orders' activeStyle>
-                                            <div><FontAwesomeIcon icon={faBagShopping} />
+                                            <div><FontAwesomeIcon icon={faCoins} />
                                             </div>
                                             <div>
-                                                Заказы
+                                                Мои ставки
                                             </div>
                                         </NavLink>
-                                        <NavLink to='/cart' activeStyle>
+                                        <NavLink to='/adm-add' activeStyle>
                                             <Badge component="badge" id='cart_badge'  badgeContent={quantity} color='secondary'>
-                                                <ShoppingCartOutlinedIcon />
+                                                <AddCircleOutlineIcon/>
                                             </Badge>
                                             <div>
-                                                Корзина
+                                                Создать аукцион
                                             </div>
                                         </NavLink>
                                         <NavLink to='/sign-in' activeStyle>
-                                            <div><FontAwesomeIcon className='icon' icon={faArrowRightFromBracket} onClick={() => {
-                                                setAuth.logout()} }/>
+                                            <div><FontAwesomeIcon className='icon' icon={faArrowRightFromBracket} onClick={() =>
+                                                localStorage.clear()}/>
                                             </div>
                                             <div>
                                                 Выход
@@ -122,30 +111,24 @@ const Navbar = () => {
                 </IconContext.Provider>
 
                 <NavMenu classname='sidebar'>
-                    <NavLink to='/adm-home' id='admPanel' activeStyle>
-                        <div><FontAwesomeIcon icon={faUserShield}/></div>
-                        <div>Управление</div>
-                    </NavLink>
                     <NavLink to='#'>
-                      <div><button className="userBalance">
-                          {info.userBalance}&#129689;</button></div>
                         <div>
-                            {info.email}
+                            {/*{info.email}*/}email
                         </div>
                     </NavLink>
                     <NavLink to='/orders' activeStyle>
-                        <div><FontAwesomeIcon icon={faBagShopping} />
+                        <div><FontAwesomeIcon icon={faCoins} />
                         </div>
                         <div>
-                            Заказы
+                           Мои ставки
                         </div>
                     </NavLink>
-                    <NavLink to='/cart' activeStyle>
+                    <NavLink to='/adm-add' activeStyle>
                         <Badge component="badge" id='cart_badge'  badgeContent={quantity} color='secondary'>
-                            <ShoppingCartOutlinedIcon />
+                            <AddCircleOutlineIcon/>
                         </Badge>
                         <div>
-                            Корзина
+                            Создать аукцион
                         </div>
                     </NavLink>
                     <NavLink to='/sign-in' activeStyle>
@@ -156,8 +139,6 @@ const Navbar = () => {
                             Выход
                         </div>
                     </NavLink>
-                    {/* Second Nav */}
-                    {/* <NavBtnLink to='/sign-in'>Sign In</NavBtnLink> */}
                 </NavMenu>
             </Nav>
         </>
