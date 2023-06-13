@@ -15,14 +15,26 @@ const Products = ({ cat, filters, sort }) => {
 
     useEffect(() => {
         const getProducts = async () => {
+
             try {
-                const response = await axios.get('/products');
-                console.log(response)
+
+                const response = await axios.get('http://130.193.40.81:8000/api/lots/',
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${JSON.parse(localStorage.getItem("userData")).accessToken}`,
+                            'Access-Control-Allow-Origin': 'http://localhost:3000'
+                        },
+                        withCredentials: false,
+                        mode: 'no-cors',
+                    }
+                );
+                  console.log(response.data);
                 setProducts(response.data);
             } catch (err) {}
         };
         getProducts();
-    }, );
+        console.log(products);
+    }, []);
 
     /*useEffect(() => {
         cat &&
