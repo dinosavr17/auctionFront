@@ -5,6 +5,7 @@ import axios from "../api/axios";
 import {OrderDetails} from "./OrderDetails";
 import shortid from 'shortid';
 import {Modal} from "./Modal";
+import Navbar from "./Navbar";
 const Container = styled.div`
   border-color: #222222;
   border-radius: 10px;
@@ -25,8 +26,11 @@ const Info = styled.div`
 const Order = styled.div`
   display: flex;
   justify-content: space-between;
-  ${mobile({ flexDirection: "column" })}
-  background-color: lavender;
+  ${mobile({flexDirection: "column"})}
+  background-color: #ffffff;
+  color: black;
+  border-color: black;
+  border-style: solid;
   margin: 1em;
   border-radius: 10px;
 `;
@@ -77,12 +81,17 @@ const OrderButton = styled.button`
   color: white;
   font-weight: 600;
 `;
+const InnerImage = styled.img `
+width: 200px;
+  margin: 15px 0;
+  height: 150px;
+`
 export const OrderHistory = () => {
     const [modalActive, setModalActive] = useState(false);
     const [orderRecords, setOrderRecords] = useState([]);
     useEffect(async ()=>{
         const response=await axios.get(
-            'http://localhost:3000/user/orders',
+            'http://130.193.40.81:8000/api/buyerslots/',
             {
                 headers: {
                     'Authorization': `Bearer ${JSON.parse(localStorage.getItem("userData")).accessToken}`,
@@ -90,6 +99,8 @@ export const OrderHistory = () => {
             }
         );
         setOrderRecords(response.data);
+        console.log(response.data, 'kfkfkkfkfkfkfkf');
+        console.log(orderRecords, 'rec');
         // console.log(response.data);
         // console.log(orderRecords);
     },[])
@@ -111,8 +122,10 @@ export const OrderHistory = () => {
     return (
        <Container>
            <Wrapper>
+               <Navbar/>
+
                <Title>
-                <div>История заказов:</div>
+                <div>История моих ставок:</div>
                </Title>
                <Info>
                    {orderRecords.map((order) => (
@@ -120,20 +133,23 @@ export const OrderHistory = () => {
                            <OrderDetail>
                                {/*<Image src={product.imageUrl} />*/}
                                <Details>
-                                   <CreationDate key={shortid.generate()}>
-                                       <b>Дата Создания:</b> {getDate(order.creationDate)}
-                                   </CreationDate>
                                    <ProductId key={shortid.generate()}>
-                                       <b>ID:</b> {order.id}
+                                       <b>Лот:</b> {order.name}
                                    </ProductId>
+                                   <CreationDate key={shortid.generate()}>
+                                       <b>Дата Создания аукциона:</b> {getDate(order.creation_time)}<br/>
+                                   </CreationDate>
+                                   <CreationDate>
+                                       <b>Дата Окончания аукциона:</b> {getDate(order.end_time)}<br/>
+                                   </CreationDate>
                                    <ProductSize key={shortid.generate()}>
-                                       <b>Сумма Заказа:</b> {order.total}🪙
+                                       <b>Текущая стоимость:</b> {order.current_price}🪙
                                    </ProductSize>
                                </Details>
                            </OrderDetail>
                            <PriceDetail>
                                <ProductPrice>
-                                <OrderDetails item={order} />
+                                <InnerImage src={order.image}/>
                                </ProductPrice>
                                <ProductAmountContainer>
                                </ProductAmountContainer>
