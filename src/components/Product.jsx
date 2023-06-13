@@ -10,18 +10,20 @@ import axios from "../api/axios";
 import {Modal} from "./Modal";
 import {addProduct, removeProduct} from "../redux/cartRedux";
 import { useDispatch } from "react-redux";
+import {duration} from "@mui/material";
 
 const Container = styled.div`
   flex: 1;
   margin: 5px;
   min-width: 280px;
-  height: 350px;
+  height: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   background-color: #f5fbfd;
   position: relative;
+  border-radius: 10px;
 `;
 const Wrapper = styled.div`
   height: 100%;
@@ -88,8 +90,14 @@ display: flex;
 const AmountContainer = styled.div`
   display: flex;
   align-items: center;
+  flex-direction: column;
   font-weight: 700;
 `;
+const PriceBlock = styled.div`
+display: flex;
+  flex-direction: row;
+  margin-top: 10px;
+`
 const Amount = styled.span`
   width: 30px;
   height: 30px;
@@ -111,7 +119,7 @@ const Product = ({ item }) => {
 
 
     useEffect(async ()=>{
-        const response=await axios.get(`/products/${item.id}`)
+        const response=await axios.get(`http://130.193.40.81:8000/api/lot/${item.id}`)
         console.log("Product",response.data)
         setProduct(response.data);
     },[item])
@@ -123,10 +131,24 @@ const Product = ({ item }) => {
         }
         return quantity;
     };
-    const handleAdd = () => {
-        dispatch(
-            addProduct({...product, quantity })
-        );
+    const handleAdd = async () => {
+        try {
+
+            const response = await axios.put(`http://127.0.0.1:8000/api/lot/${item.id}/bet/`,
+                JSON.stringify({
+                    bet: quantity,
+                }),
+                {
+                    headers: {
+                        'Authorization': `Bearer ${JSON.parse(localStorage.getItem("userData")).accessToken}`,
+                        'Access-Control-Allow-Origin': 'http://localhost:3000'
+                    },
+                    withCredentials: false,
+                    mode: 'no-cors',
+                }
+            );
+            console.log(response.data);
+        } catch (err) {}
         setModalActive(false);
     };
     const handleRemove = () => {
@@ -139,20 +161,64 @@ const Product = ({ item }) => {
             alert('Нечего удалять');
         }
     };
+    const getDate = (date) => {
+        console.log('ДАТА С БЭКА', date);
+        let dateFormated = new Date(date);
+        console.log('ДАТА КАК ОБЪЕКТ', typeof dateFormated);
+        let dayFormated = dateFormated.getDate();
+        let monthFormated = dateFormated.getMonth();
+        let yearFormated = dateFormated.getFullYear();
+        let timeFormated = dateFormated.getHours()+':'+dateFormated.getMinutes();
+        console.log(dateFormated.getDate());
+        console.log(dayFormated +'.'+monthFormated+'.'+yearFormated);
+        console.log('Отформатированное время'+ timeFormated);
+        let finalDate = dayFormated +'.'+monthFormated+'.'+yearFormated + ' ' +timeFormated;
+        return finalDate
+    }
+    useEffect(async ()=>{
+        const startTimer = (duration) => {
+
+        }
+    },[item])
+    // function startTimer(duration, display) {
+    //     var timer = duration, minutes, seconds;
+    //     setInterval(function () {
+    //         minutes = parseInt(timer / 60, 10);
+    //         seconds = parseInt(timer % 60, 10);
+    //
+    //         minutes = minutes < 10 ? "0" + minutes : minutes;
+    //         seconds = seconds < 10 ? "0" + seconds : seconds;
+    //
+    //         display.textContent = minutes + ":" + seconds;
+    //
+    //         if (--timer < 0) {
+    //             timer = duration;
+    //         }
+    //     }, 1000);
+    // }
+    //
+    // window.onload = function () {
+    //     var fiveMinutes = 60 * 5,
+    //         display = document.querySelector('#time');
+    //     startTimer(fiveMinutes, display);
+    // };
 
     return (
         <Container>
             <Wrapper>
                 <ImgContainer>
-                    <div><Image alt='товар' onClick={() => setModalActive(true)} src={item.imageUrl}/></div>
+                    <div><Image alt='товар' onClick={() => setModalActive(true)} src={item.image}/></div>
                 </ImgContainer>
                 <InfoContainer>
                     <div>
                         <Title>{item.name}</Title>
-                        <Desc>{item.price}🪙</Desc>
+                        <Desc>Стартовая цена: {item.first_price}🪙</Desc>
+                        <Desc>Текущая цена: {item.current_price}🪙</Desc>
+                        <Desc>Время окончания аукциона: {getDate(item.end_time)}</Desc>
                     </div>
+                    {/*<div>Registration closes in <span id="time">05:00</span> minutes!</div>*/}
                     <div>
-                        <Button onClick={setModalActive} className='custom-btn'>Купить</Button>
+                        <Button onClick={setModalActive} className='custom-btn'>Сделать ставку</Button>
                     </div>
                 </InfoContainer>
 
@@ -160,19 +226,22 @@ const Product = ({ item }) => {
                     <Container>
                         <Wrapper>
                             <ImgContainer>
-                                <Image src={product.imageUrl}></Image>
+                                <Image src={product.image}></Image>
                             </ImgContainer>
                             <InfoContainer>
                                 <Title>{product.name}</Title>
                                 <AmountContainer>
+                                    <label htmlFor='bet_input'>Сумма ставки</label>
+                                    <PriceBlock>
                                     <Remove onClick={() => handleQuantity("dec")} />
-                                    <Amount>{quantity}</Amount>
+                                    <input style={{borderStyle: 'solid', borderRadius: '10px'}} value={quantity} id='bet_input' onChange={(e) => setQuantity(e.target.value)}></input>
                                     <Add onClick={() => handleQuantity("inc")} />
+                                    </PriceBlock>
                                 </AmountContainer>
                                 <Desc>
                                     <div>{product.description}</div>
-                                    <div>{product.price}🪙</div>
-                                    <div>Осталось: {product.amount} шт</div>
+                                    <div>{product.current_price}🪙</div>
+                                    <div>Последний сделавший ставку: {product.current_buyer}</div>
                                 </Desc>
                                 <div>
                                     <Button onClick={handleAdd} className='custom-btn'>Купить</Button>
