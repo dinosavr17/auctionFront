@@ -3,8 +3,7 @@ import useAuth from '../hooks/useAuth';
 import './login.css';
 import axios from "../api/axios";
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import registerLogo from '../images/logotype.svg'
-const LOGIN_URL = '/auth';
+import registerLogo from '../images/logotype.png'
 
 const Login = () => {
     const {setAuth,login} = useAuth();
@@ -16,35 +15,43 @@ const Login = () => {
     const emailRef = useRef();
     const errRef = useRef();
 
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errMsg, setErrMsg] = useState('');
 
-    useEffect(() => {
-        emailRef.current.focus();
-    }, [])
-
-    useEffect(() => {
-        setErrMsg('');
-    }, [email, password])
+    // useEffect(() => {
+    //     emailRef.current.focus();
+    // }, [])
+    //
+    // useEffect(() => {
+    //     setErrMsg('');
+    // }, [email, password])
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
-            const response = await axios.post(LOGIN_URL,
-                JSON.stringify({ email, password }),
+            const response = await axios.post('http://130.193.40.81:8000/api/token/',
+                JSON.stringify({ username, password }),
                 {
-                    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': 'http://localhost:3000' },
+
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'http://localhost:3000',
+                    },
                     withCredentials: true
                 }
             );
             // console.log(JSON.stringify(response?.data));
             // console.log(JSON.stringify(response));
-            const accessToken = response?.data?.token;
-            setAuth({email,password, accessToken});
-            login(accessToken,email)
-            setEmail('');
+            const accessToken = response?.data?.access;
+            console.log('token', accessToken);
+            localStorage.setItem("userData", JSON.stringify({
+                accessToken: accessToken
+            }))
+            setAuth({username,password, accessToken});
+            login(accessToken,username)
+            setUsername('');
             setPassword('');
             navigate(from, { replace: true });
         } catch (err) {
@@ -65,11 +72,11 @@ const Login = () => {
     return (
                 <section className="register_section">
                     <div className="register_logo">
-                        <img className="registerLogo" src={registerLogo} alt='logo'/>
+                        <img style={{width:'150px', height: '150px'}} className="registerLogo" src={registerLogo} alt='logo'/>
                     </div>
                     <div className="card">
                     <p ref={errRef} className={errMsg ? "errmsg" : "offscreen"} aria-live="assertive">{errMsg}</p>
-                    <h1 className="login_title">Войти в UDV store</h1>
+                    <h1 className="login_title">Войти в AuctionMaster</h1>
                     <form className="login_form" onSubmit={handleSubmit}>
                         <input className='login_input'
                             type="text"
@@ -77,8 +84,8 @@ const Login = () => {
                             id="username"
                             ref={emailRef}
                             autoComplete="off"
-                            onChange={(e) => setEmail(e.target.value)}
-                            value={email}
+                            onChange={(e) => setUsername(e.target.value)}
+                            value={username}
                             required
                         />
 
