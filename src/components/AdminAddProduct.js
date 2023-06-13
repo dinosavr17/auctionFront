@@ -3,8 +3,8 @@ import styled, {createGlobalStyle, css} from "styled-components";
 import axios from "../api/axios";
 import {mobile} from "../responsive";
 import './adminAdd.css'
-import AdmNavbar from "./AdmNavbar";
 import { useForm } from 'react-hook-form';
+import Navbar from "./Navbar";
 
 const GlobalStyle = createGlobalStyle`
   html {
@@ -80,45 +80,133 @@ const Wrapper = styled.div`
 
 export const AdminAddProduct = () => {
     const [product, setProduct] = useState({});
+    const [image, setImage] = useState('');
+    const [formInfo, setFormInfo] = useState(null);
     const { register, handleSubmit, formState: { errors } } = useForm();
+    const [file, setFile] = useState(null);
+    const [fileDataURL, setFileDataURL] = useState(null);
+    const [bodyFormData, setBodyFormData] = useState(null);
+
+    // const changeHandler = (e) => {
+    //     const file = e.target.files[0];
+    //     if (!file.type.match(imageMimeType)) {
+    //         alert("Image mime type is not valid");
+    //         return;
+    //     }
+    //     setFile(file);
+    // }
+
+
     const onSubmit = async (data) => {
         if (window.confirm('Вы уверены, что хотите добавить товар?')) {
             let bodyFormData;
-            bodyFormData = new FormData();
-            // console.log(data.file[0]);
-            data.file = data.file[0];
-            // console.log(data.name);
-            // console.log(data.price);
-            // console.log(data.amount);
-            bodyFormData.append('name', data.name);
-            bodyFormData.append('price', data.price);
-            bodyFormData.append('description', data.description);
-            bodyFormData.append('amount', data.amount);
-            bodyFormData.append('file', data.file);
-            // bodyFormData.append("file", imageBlob, "image.png");
-            // for(let [name, value] of bodyFormData) {
-            //     alert(`${name} = ${value}`); // key1=value1, потом key2=value2
+            setFormInfo(data);
+            // setFormInfo((prevState) => ({...prevState, image: data.image[0]}));
+            // bodyFormData = new FormData();
+            // console.log(data.image[0]);
+            // // setFile(data.image[0]);
+            // console.log(file);
+            // bodyFormData.append('name', data.name);
+            // bodyFormData.append('first_price', data.first_price);
+            // bodyFormData.append('current_price', data.current_price);
+            // bodyFormData.append('end_time', data.end_time);
+            // bodyFormData.append('image', fileDataURL);
+            // setBodyFormData(bodyFormData);
+            // sendLot(bodyFormData);
+            //
+            // try {
+            //     const response = await axios.post('http://130.193.40.81:8000/api/lots/', bodyFormData,
+            //         {
+            //             headers: {
+            //                 'Content-Type': "multipart/form-data",
+            //                 'Access-Control-Allow-Origin': 'http://localhost:3000',
+            //                 'Authorization': `Bearer ${JSON.parse(localStorage.getItem("userData")).accessToken}`,
+            //             },
+            //         },
+            //     );
+            //     console.log(response?.data);
+            // } catch (err) {
             // }
-            try {
-                // console.log(bodyFormData);
-                const response = await axios.post('http://localhost:3000/admin/product', bodyFormData,
-                    {
-                        headers: {
-                            'Content-Type': "multipart/form-data",
-                            'Access-Control-Allow-Origin': 'http://localhost:3000',
-                            'Authorization': `Bearer ${JSON.parse(localStorage.getItem("userData")).accessToken}`,
-                        },
-                    },
-                );
-                console.log(response?.data);
-            } catch (err) {
-            }
         }
     };
-    const OnChange = (e) =>{
-        const file = e.target.files[0];
+    const sendLot = (bodyFormData) => {
+        try {
+            const response = axios.post('http://130.193.40.81:8000/api/lots/', bodyFormData,
+                {
+                    headers: {
+                        'Content-Type': "multipart/form-data",
+                        'Access-Control-Allow-Origin': 'http://localhost:3000',
+                        'Authorization': `Bearer ${JSON.parse(localStorage.getItem("userData")).accessToken}`,
+                    },
+                },
+            );
+            console.log(response?.data);
+        } catch (err) {
+        }
+
     }
-    console.log(errors);
+    useEffect(() => {
+        if (formInfo !=null) {
+            console.log(formInfo, 'formInfo');
+            let fileReader;
+            if (formInfo.image) {
+                let bodyFormData = new FormData();
+                function encodeImageFileAsURL(element) {
+                    let file = element[0];
+                    let reader = new FileReader();
+                    reader.onloadend = function() {
+                        console.log('RESULT', reader.result)
+                        bodyFormData.append('image', reader.result);
+                        bodyFormData.append('name', formInfo.name);
+                        bodyFormData.append('first_price', formInfo.first_price);
+                        bodyFormData.append('current_price', formInfo.current_price);
+                        bodyFormData.append('end_time', formInfo.end_time);
+                        sendLot(bodyFormData);
+                    }
+                    reader.readAsDataURL(file);
+                }
+                encodeImageFileAsURL(formInfo.image);
+                // formInfo.image = encodeImageFileAsURL(formInfo.image);
+                console.log(formInfo.image)
+                console.log(file, 'lalalalalla');
+                console.log(formInfo.image, ';;;;;');
+            }
+        }
+    }, [formInfo]);
+    useEffect(() => {
+        let fileReader;
+        if (file) {
+            fileReader = new FileReader();
+            console.log(file,'log')
+            fileReader.onload = (e) => {
+                const { result } = e.target;
+                    setFileDataURL(result);
+            }
+            fileReader.readAsDataURL(file);
+        }
+
+    }, [file]);
+    // useEffect(() => {
+    //     if (fileDataURL !=null) {
+    //         console.log('fileData', fileDataURL);
+    //         console.log(bodyFormData.entries(), 'bfd')
+    //         sendLot(bodyFormData);
+    //     }
+    //
+    // }, [fileDataURL]);
+
+    const onchange = (e) =>{
+        let file =  e.target.files[0];
+        function encodeImageFileAsURL(element) {
+            var reader = new FileReader();
+            reader.onloadend = function() {
+                console.log('RESULT', reader.result)
+                localStorage.setItem('image', reader.result.toString());
+            }
+            return reader.readAsDataURL(file);
+        }
+        encodeImageFileAsURL(file);
+    }
     // const handleClick = async () => {
     //     try {
     //         console.log(bodyFormData);
@@ -136,24 +224,24 @@ export const AdminAddProduct = () => {
     // };
     return (
                 <Container className='order_section'>
-                    <AdmNavbar/>
+                  <Navbar/>
                     <>
                         <GlobalStyle/>
                     <Wrapper >
-                        <Title>Добавить новый товар:
+                        <Title>Создать новый аукцион:
                         </Title>
                         <Info>
                             <StyledFormWrapper>
                             <StyledForm  class="form-horizontal" onSubmit={handleSubmit(onSubmit)}>
                                 <div className="form-group">
 
-                                <StyledInput type="text" placeholder="Название товара" {...register("name", {required: true, maxLength: 80})} />
-                                <StyledInput type="text" placeholder="Цена" {...register("price", {required: true, maxLength: 100})} />
-                                <StyledInput  type="text" placeholder="Описание" {...register("description", {required: true, maxLength: 1000})} />
-                                <StyledInput  type="text" placeholder="Количество" {...register("amount", {})} />
-                                <input type="file" placeholder="file" onChange={onchange} accept=".jpg,.jpeg,.png" {...register("file", {})} />
+                                <StyledInput type="text" placeholder="Название лота" {...register("name", {required: true, maxLength: 80})} />
+                                <StyledInput type="text" placeholder="Начальная Цена" {...register("first_price", {required: true, maxLength: 100})} />
+                                <StyledInput  type="text" placeholder="Текущая цена" {...register("current_price", {required: true, maxLength: 1000})} />
+                                <StyledInput  type="datetime-local" placeholder="Дата и время окончания аукциона" {...register("end_time", {})} />
+                                <input type="file" placeholder="image" onChange={onchange} accept=".jpg,.jpeg,.png" {...register("image", {})} />
 
-                                <input className='custom-btn' type="submit" />
+                                <input className='custom-btn' type="submit"  />
                                 </div>
                             </StyledForm>
                             {/*<button onClick={handleClick}>Создать продукт</button>*/}
