@@ -26,6 +26,7 @@ const Order = styled.div`
   justify-content: space-between;
   ${mobile({ flexDirection: "column" })}
   background-color: lavender;
+  color: black;
   margin: 1em;
   border-radius: 10px;
   max-height: 100%;
@@ -51,19 +52,19 @@ const OrderButton = styled.button`
   width: 100%;
   padding: 10px;
   background-color: black;
-  color: white;
+  color: black;
 `;
 export const OrderDetails = ({item}) => {
     const [modalActive, setModalActive] = useState(false);
     const [orderInfo, setOrderInfo] = useState([]);
-    useEffect(async ()=>{
-        const response=await axios.get(`http://localhost:3000/user/order_records/${item.id}`)
-        setOrderInfo(response.data);
-        // console.log(response.data);
-    },[item])
+    // useEffect(async ()=>{
+    //     const response=await axios.get(`http://localhost:3000/user/order_records/${item.id}`)
+    //     setOrderInfo(response.data);
+    //     // console.log(response.data);
+    // },[item])
     return (
        <Container>
-           <OrderButton onClick={() => setModalActive(true)}>Подробнее</OrderButton>
+           {/*<OrderButton onClick={() => setModalActive(true)}>Подробнее</OrderButton>*/}
            <Modal active={modalActive} setActive={setModalActive}>
           <Info>
               {orderInfo.map((orderExtra,i) => (
